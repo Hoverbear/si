@@ -1,8 +1,9 @@
 extern crate num;
+#[macro_use] extern crate lazy_static;
+#[cfg(test)]#[macro_use] extern crate quickcheck;
 
 pub mod prefix;
-pub mod unit;
+pub mod base; 
 
-pub type Number = i64;
-pub type Fraction = num::rational::Ratio<Number>;
-
+pub type Number = num::bigint::BigInt;
+pub type Fraction = num::rational::BigRational;
