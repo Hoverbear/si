@@ -1,109 +1,187 @@
 use {BigRational, BigInt};
-use base::Base;
+use base::*;
+use num::pow::pow;
+use num::bigint::Sign::*;
 
-#[cfg(test)]mod test;
+#[macro_use]
+mod macros;
 
 pub trait Prefix<B> where B: Base {
-  fn factor() -> &'static BigInt;
+  fn factor() -> &'static BigRational;
   fn prefix() -> &'static str;
   fn base(self) -> B;
   fn convert<P>(val: P) -> Self where P: Prefix<B>;
 }
 
-macro_rules! generate_prefix {
-  ($name:ident, $prefix:expr, $factor:expr) => (
-    
-    #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct $name<B>(B) where B: Base;
-    
-    impl<B> Prefix<B> for $name<B> where B: Base {
-      fn factor() -> &'static BigInt {
-        &*$factor
-      }
-      fn prefix() -> &'static str {
-        $prefix
-      }
-      fn base(self) -> B {
-        let factor = BigRational::from_integer(Self::factor().clone());
-        B::from(self.0.value() * factor)
-      }
-      fn convert<P>(val: P) -> Self where P: Prefix<B> {
-        let base = val.base();
-        Self::from(base)
-      }
-    }
-
-    impl<B> From<B> for $name<B> where B: Base {
-      fn from(val: B) -> Self {
-        let factor = BigRational::from_integer(Self::factor().clone());
-        $name(B::from(val.value() / factor))
-      }
-    }
-
-    impl<B> From<BigInt> for $name<B> where B: Base {
-      fn from(val: BigInt) -> Self {
-        $name(B::from(BigRational::from_integer(val)))
-      }
-    }
-
-    impl<B> From<i64> for $name<B> where B: Base {
-      fn from(val: i64) -> Self {
-        let num = BigInt::from(val);
-        let fraction = BigRational::from_integer(num);
-        $name(B::from(fraction))
-      }
-    }
-
-    impl<B> From<BigRational> for $name<B> where B: Base {
-      fn from(val: BigRational) -> Self {
-        $name(B::from(val))
-      }
-    }
-  )
+fn generate_prefix_factor(exp: isize) -> BigRational {
+  let ten = BigInt::new(Plus, vec![10]);
+  let one = 1.into();
+  if exp >= 0 {
+    // (1*10^exp) / 1
+    BigRational::new(pow(ten, exp as usize), one)
+  } else {
+    // 1 / (1*10^exp)
+    let exp = exp * -1; // Invert to be positive.
+    BigRational::new(one, pow(ten, exp as usize))
+  }
 }
 
-lazy_static! {
-  static ref YOTTA: BigInt = BigInt::parse_bytes(b"1000000000000000000000000", 10).unwrap();
-  static ref ZETTA: BigInt = BigInt::parse_bytes(b"1000000000000000000000", 10).unwrap();
-  static ref EXA:   BigInt = BigInt::parse_bytes(b"1000000000000000000", 10).unwrap();
-  static ref PETA:  BigInt = BigInt::parse_bytes(b"1000000000000000", 10).unwrap();
-  static ref TERA:  BigInt = BigInt::parse_bytes(b"1000000000000", 10).unwrap();
-  static ref GIGA:  BigInt = BigInt::parse_bytes(b"1000000000", 10).unwrap();
-  static ref MEGA:  BigInt = BigInt::parse_bytes(b"1000000", 10).unwrap();
-  static ref KILO:  BigInt = BigInt::parse_bytes(b"1000", 10).unwrap();
-  static ref HECTO: BigInt = BigInt::parse_bytes(b"100", 10).unwrap();
-  static ref DEKA:  BigInt = BigInt::parse_bytes(b"10", 10).unwrap();
-
-  static ref DECI:  BigInt = BigInt::parse_bytes(b"-10", 10).unwrap();
-  static ref CENTI: BigInt = BigInt::parse_bytes(b"-100", 10).unwrap();
-  static ref MILLI: BigInt = BigInt::parse_bytes(b"-1000", 10).unwrap();
-  static ref MICRO: BigInt = BigInt::parse_bytes(b"-1000000", 10).unwrap();
-  static ref NANO:  BigInt = BigInt::parse_bytes(b"-1000000000", 10).unwrap();
-  static ref PICO:  BigInt = BigInt::parse_bytes(b"-1000000000000", 10).unwrap();
-  static ref FEMTO: BigInt = BigInt::parse_bytes(b"-1000000000000000", 10).unwrap();
-  static ref ATTO:  BigInt = BigInt::parse_bytes(b"-1000000000000000000", 10).unwrap();
-  static ref ZEPTO: BigInt = BigInt::parse_bytes(b"-1000000000000000000000", 10).unwrap();
-  static ref YOCTO: BigInt = BigInt::parse_bytes(b"-1000000000000000000000000", 10).unwrap();
+generate_prefix! {
+  name   = Yotta,
+  module = yotta,
+  prefix = Y,
+  factor = 24,
+  doc    = "A yotta is 10^24 of the base unit.", 
 }
 
-generate_prefix!(Yotta, "Y", YOTTA);
-generate_prefix!(Zetta, "Z", ZETTA);
-generate_prefix!(Exa,   "E", EXA);
-generate_prefix!(Peta,  "P", PETA);
-generate_prefix!(Tera,  "T", TERA);
-generate_prefix!(Giga,  "G", GIGA);
-generate_prefix!(Mega,  "M", MEGA);
-generate_prefix!(Kilo,  "k", KILO);
-generate_prefix!(Hecto, "h", HECTO);
-generate_prefix!(Deka,  "da", DEKA);
+generate_prefix! {
+  name   = Zetta,
+  module = zetta,
+  prefix = Z,
+  factor = 21,
+  doc    = "A zetta is 10^21 of the base unit.", 
+}
 
-generate_prefix!(Deci,  "d", DECI);  
-generate_prefix!(Centi, "c", CENTI); 
-generate_prefix!(Milli, "m", MILLI); 
-generate_prefix!(Micro, "μ", MICRO); 
-generate_prefix!(Nano,  "n", NANO);  
-generate_prefix!(Pico,  "p", PICO);  
-generate_prefix!(Femto, "f", FEMTO); 
-generate_prefix!(Atto,  "a", ATTO);  
-generate_prefix!(Zepto, "z", ZEPTO); 
-generate_prefix!(Yocto, "y", YOCTO);
+generate_prefix! {
+  name   = Exa,
+  module = exa,
+  prefix = E,
+  factor = 18,
+  doc    = "An exa is 10^18 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Peta,
+  module = peta,
+  prefix = P,
+  factor = 15,
+  doc    = "A peta is 10^15 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Tera,
+  module = tera,
+  prefix = T,
+  factor = 12,
+  doc    = "A tera is 10^12 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Giga,
+  module = giga,
+  prefix = G,
+  factor = 9,
+  doc    = "A giga is 10^9 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Mega,
+  module = mega,
+  prefix = M,
+  factor = 6,
+  doc    = "A mega is 10^6 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Kilo,
+  module = kilo,
+  prefix = k,
+  factor = 3,
+  doc    = "A kilo is 10^3 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Hecto,
+  module = hecto,
+  prefix = h,
+  factor = 2,
+  doc    = "A hecto is 10^2 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Deca,
+  module = deca,
+  prefix = da,
+  factor = 1,
+  doc    = "A hecto is 10^1 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Deci,
+  module = deci,
+  prefix = d,
+  factor = -1,
+  doc    = "A deci is 10^-1 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Centi,
+  module = centi,
+  prefix = c,
+  factor = -2,
+  doc    = "A centi is 10^-2 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Milli,
+  module = milli,
+  prefix = m,
+  factor = -3,
+  doc    = "A milli is 10^-3 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Micro,
+  module = micro,
+  prefix = μ,
+  factor = -6,
+  doc    = "A micro is 10^-6 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Nano,
+  module = nano,
+  prefix = n,
+  factor = -9,
+  doc    = "A nano is 10^-9 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Pico,
+  module = pico,
+  prefix = p,
+  factor = -12,
+  doc    = "A pico is 10^-12 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Femto,
+  module = femto,
+  prefix = f,
+  factor = -15,
+  doc    = "A femto is 10^-15 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Atto,
+  module = atto,
+  prefix = a,
+  factor = -18,
+  doc    = "An atto is 10^-18 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Zepto,
+  module = zepto,
+  prefix = z,
+  factor = -21,
+  doc    = "A zepto is 10^-21 of the base unit.", 
+}
+
+generate_prefix! {
+  name   = Yocto,
+  module = yocto,
+  prefix = y,
+  factor = -24,
+  doc    = "A yocto is 10^-24 of the base unit.", 
+}

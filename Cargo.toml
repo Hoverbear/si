@@ -7,5 +7,6 @@ authors = ["Andrew Hobden <andrew@hoverbear.org>"]
 num = "*"
 lazy_static = "*"
 
+
 [dev-dependencies]
 quickcheck = "*"
