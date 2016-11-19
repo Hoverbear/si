@@ -91,8 +91,10 @@ macro_rules! generate_prefix {
       #[cfg(test)]
       impl Arbitrary for $name<Meter> {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-          let (numerator, denominator) = (BigInt::from(g.gen::<i64>()), BigInt::from(g.gen::<i64>()));
-          let rational = BigRational::new(numerator, denominator);
+          let (numerator, denominator) = (g.gen::<i64>(), g.gen::<i64>());
+          let denominator = if denominator == 0 { 1 } else { denominator }; // The denominator cannot be zero.
+
+          let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
           $name::<Meter>::new(rational)
         }
       }
@@ -140,6 +142,7 @@ macro_rules! generate_prefix {
           let expected_amount = value.clone().base().value() / $name::<Meter>::factor();
           value.value() == expected_amount
         }
+        // This is mostly done just to test that convert works. All implementations of convert should similarly work.
         fn convert_to_kilo_works(value: $name<Meter>) -> bool {
           let expected_amount = value.clone().base().value() / Kilo::<Meter>::factor();
           Kilo::convert(value).value() == expected_amount
