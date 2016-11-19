@@ -112,6 +112,10 @@ macro_rules! generate_prefix {
           let expected_amount = value.clone().base().value() / $name::<Meter>::factor();
           value.value() == expected_amount
         }
+        fn convert_to_kilo_works(value: $name<Meter>) -> bool {
+          let expected_amount = value.clone().base().value() / Kilo::<Meter>::factor();
+          Kilo::convert(value).value() == expected_amount
+        }
       }
     }
     pub use self::$module::$name;

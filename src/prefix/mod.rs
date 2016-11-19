@@ -2,6 +2,7 @@ use {BigRational, BigInt};
 use base::*;
 use num::pow::pow;
 use num::bigint::Sign::*;
+use std::ops::Neg;
 
 #[macro_use]
 mod macros;
@@ -28,7 +29,7 @@ fn generate_prefix_factor(exp: isize) -> BigRational {
     BigRational::new(pow(ten, exp as usize), one)
   } else {
     // 1 / (1*10^exp)
-    let exp = exp * -1; // Invert to be positive.
+    let exp = exp.neg(); // Invert to be positive.
     BigRational::new(one, pow(ten, exp as usize))
   }
 }
