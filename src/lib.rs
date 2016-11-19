@@ -5,5 +5,5 @@ extern crate num;
 pub mod prefix;
 pub mod base; 
 
-pub type Number = num::bigint::BigInt;
-pub type Fraction = num::rational::BigRational;
+pub use num::bigint::BigInt;
+pub use num::rational::BigRational;
