@@ -108,6 +108,34 @@ macro_rules! generate_prefix {
           let prefixed = $name::<Meter>::from(amount);
           prefixed.base() == value
         }
+        // Unfortunately BigRational doesn't implement Arbitrary
+        fn from_rational_returns_provided_value(numerator: i64, denominator: i64) -> bool {
+          let denominator = if denominator == 0 { 1 } else { denominator }; // The denominator cannot be zero.
+          let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
+          let prefixed = $name::<Meter>::from(rational.clone());
+          prefixed.value() == rational
+        }
+        // Unfortunately BigRational doesn't implement Arbitrary
+        fn from_rational_to_base_returns_scaled_value(numerator: i64, denominator: i64) -> bool {
+          let denominator = if denominator == 0 { 1 } else { denominator }; // The denominator cannot be zero.
+          let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
+          let prefixed = $name::<Meter>::from(rational.clone());
+          prefixed.base().value() == rational * $name::<Meter>::factor()
+        }
+        // Unfortunately BigInt doesn't implement Arbitrary
+        fn from_bigint_returns_provided_value(value: i64) -> bool {
+          let bigint = BigInt::from(value);
+          let prefixed = $name::<Meter>::from(bigint.clone());
+          let expected_rational = BigRational::from_integer(bigint);
+          prefixed.value() == expected_rational
+        }
+        // Unfortunately BigInt doesn't implement Arbitrary
+        fn from_bigint_to_base_returns_scaled_value(value: i64) -> bool {
+          let bigint = BigInt::from(value);
+          let prefixed = $name::<Meter>::from(bigint.clone());
+          let expected_base_value = BigRational::from_integer(bigint) * $name::<Meter>::factor();
+          prefixed.base().value() == expected_base_value
+        }
         fn value_functions_as_expected(value: $name<Meter>) -> bool {
           let expected_amount = value.clone().base().value() / $name::<Meter>::factor();
           value.value() == expected_amount

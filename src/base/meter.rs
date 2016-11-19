@@ -41,7 +41,10 @@ impl From<BigRational> for Meter {
 #[cfg(test)]
 impl Arbitrary for Meter {
   fn arbitrary<G: Gen>(g: &mut G) -> Self {
-    let (numerator, denominator) = (BigInt::from(g.gen::<i64>()), BigInt::from(g.gen::<i64>()));
+    let (numerator, denominator) = (g.gen::<i64>(), g.gen::<i64>());
+    let denominator = if denominator == 0 { 1 } else { denominator }; // The denominator cannot be zero.
+    
+    let (numerator, denominator) = (BigInt::from(numerator), BigInt::from(denominator));
     let rational = BigRational::new(numerator, denominator);
     Meter::new(rational)
   }
