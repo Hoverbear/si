@@ -7,9 +7,16 @@ use num::bigint::Sign::*;
 mod macros;
 
 pub trait Prefix<B> where B: Base {
+  fn new(val: BigRational) -> Self;
+  // The factor amount.
   fn factor() -> &'static BigRational;
+  // The SI shorthand prefix.
   fn prefix() -> &'static str;
+  // The base unit.
   fn base(self) -> B;
+  // The amount of prefix units.
+  fn value(self) -> BigRational;
+  // Convert from another prefix.
   fn convert<P>(val: P) -> Self where P: Prefix<B>;
 }
 

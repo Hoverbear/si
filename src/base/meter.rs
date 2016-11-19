@@ -12,10 +12,7 @@ impl Base for Meter {
   fn unit(&self) -> &'static str {
     "m"
   }
-  fn value(&self) -> &BigRational {
-    &self.0
-  }
-  fn take(self) -> BigRational {
+  fn value(self) -> BigRational {
     self.0
   }
 }
@@ -45,7 +42,7 @@ impl From<BigRational> for Meter {
 impl Arbitrary for Meter {
   fn arbitrary<G: Gen>(g: &mut G) -> Self {
     let (numerator, denominator) = (BigInt::from(g.gen::<i64>()), BigInt::from(g.gen::<i64>()));
-    let fraction = BigRational::new(numerator, denominator);
-    Meter::new(fraction)
+    let rational = BigRational::new(numerator, denominator);
+    Meter::new(rational)
   }
 }
