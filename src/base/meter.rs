@@ -1,26 +1,42 @@
-use {BigRational, BigInt};
-use base::Base;
+use {BigRational, BigInt, Unit};
+use super::Base;
+use prefix::Prefix;
 #[cfg(test)] use quickcheck::{Arbitrary, Gen};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Meter(BigRational);
+trait Distance {}
 
-impl Base for Meter {
-  fn new(val: BigRational) -> Self {
-    Meter(val)
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Meter {
+  value: BigRational
+}
+
+impl Unit for Meter {
+  fn new(value: BigRational) -> Self {
+    Meter { 
+      value: value 
+    }
   }
-  fn unit(&self) -> &'static str {
+  fn shortform() -> &'static str {
     "m"
   }
+  fn longform() -> &'static str {
+    "meter"
+  }
   fn value(self) -> BigRational {
-    self.0
+    self.value
+  }
+}
+
+impl Base for Meter {
+  fn scale<P>(self) -> P where P: Unit + Prefix<Meter> {
+    unimplemented!();
   }
 }
 
 impl From<BigInt> for Meter {
   fn from(val: BigInt) -> Self {
     let fraction = BigRational::from_integer(val); 
-    Meter(fraction)
+    Meter::new(fraction)
   }
 }
 
@@ -28,13 +44,13 @@ impl From<i64> for Meter {
   fn from(val: i64) -> Self {
     let num = BigInt::from(val);
     let fraction = BigRational::from_integer(num); 
-    Meter(fraction)
+    Meter::new(fraction)
   }
 }
 
 impl From<BigRational> for Meter {
   fn from(val: BigRational) -> Self {
-    Meter(val)
+    Meter::new(val)
   }
 }
 

@@ -3,16 +3,17 @@ macro_rules! generate_prefix {
   {
     name   = $name:ident,
     module = $module:ident,
-    prefix = $prefix:ident,
+    shortform = $prefix:ident,
     factor = $factor:expr,
     $doc:meta,
   } => (
     mod $module {
       use {BigRational, BigInt};
-      use base::*;
       use prefix::*;
+      use base::*;
       use super::generate_prefix_factor;
       #[cfg(test)] use quickcheck::{Arbitrary, Gen};
+      use std::marker::PhantomData;
 
       lazy_static! {
         static ref FACTOR: BigRational = generate_prefix_factor($factor);
@@ -21,70 +22,70 @@ macro_rules! generate_prefix {
 
       #[$doc]
       #[derive(Clone, Debug, Eq, PartialEq)]
-      pub struct $name<B>(B) where B: Base;
+      pub struct $name<B> where B: Base {
+        value: BigRational,
+        base: PhantomData<B>,
+      }
 
       // Basic impl
-      impl<B> Prefix<B> for $name<B> where B: Base {
-        fn new(val: BigRational) -> Self {
-          $name(B::new(val))
+      impl<B> Unit for $name<B> where B: Base {
+        fn new(value: BigRational) -> Self {
+          $name {
+            value: value,
+            base: PhantomData,
+          }
         }
+        fn shortform() -> &'static str {
+          &*PREFIX
+        }
+        fn longform() -> &'static str {
+          unimplemented!()
+        }
+        fn value(self) -> BigRational {
+          self.value
+        }
+      }
+
+      impl<B> Prefix<B> for $name<B> where B: Base {
         fn factor() -> &'static BigRational {
           &*FACTOR
         }
-        fn prefix() -> &'static str {
-          &*PREFIX
+        fn scale<P>(value: P) -> Self where P: Unit + Prefix<B> {
+          Self::from(value.base())
         }
         fn base(self) -> B {
-          // Prefixes are just wrappers around the base value.
-          self.0
-        }
-        fn value(self) -> BigRational {
-          self.0.value() / Self::factor()
-        }
-        fn convert<P>(val: P) -> Self where P: Prefix<B> {
-          // Prefixes are just wrappers around the base value.
-          $name::from(val.base())
+          B::new(self.value * Self::factor())
         }
       }
 
       // Create a prefix from a given base.
       impl<B> From<B> for $name<B> where B: Base {
-        fn from(val: B) -> Self {
-          // Prefixes are just wrappers around the base value.
-          $name(val)
+        fn from(value: B) -> Self {
+          Self::new(value.value() / Self::factor())
         }
       }
 
       // Create a prefix from a BigInt.
       impl<B> From<BigInt> for $name<B> where B: Base {
-        fn from(val: BigInt) -> Self {
-          // Prefixes are wrappers around the base value, so we need to scale
-          // the base value appropriately.
-          let factor = Self::factor().clone();
-          let rational = BigRational::from_integer(val);
-          $name(B::from(rational * factor))
+        fn from(value: BigInt) -> Self {
+          let fraction = BigRational::from_integer(value);
+          Self::new(fraction)
         }
       }
 
       // Create a prefix from a i64.
       impl<B> From<i64> for $name<B> where B: Base {
-        fn from(val: i64) -> Self {
-          // Prefixes are wrappers around the base value, so we need to scale
-          // the base value appropriately.
-          let num = BigInt::from(val);
-          let rational = BigRational::from_integer(num);
-          let factor = Self::factor().clone();
-          $name(B::from(rational * factor))
+        fn from(value: i64) -> Self {
+          let number = BigInt::from(value);
+          let fraction = BigRational::from_integer(number);
+          Self::new(fraction)
         }
       }
 
       // Create a prefix from a BigRational.
       impl<B> From<BigRational> for $name<B> where B: Base {
-        fn from(val: BigRational) -> Self {
-          // Prefixes are wrappers around the base value, so we need to scale
-          // the base value appropriately.
-          let factor = Self::factor().clone();
-          $name(B::from(val * factor))
+        fn from(value: BigRational) -> Self {
+          Self::new(value)
         }
       }
 
@@ -143,9 +144,9 @@ macro_rules! generate_prefix {
           value.value() == expected_amount
         }
         // This is mostly done just to test that convert works. All implementations of convert should similarly work.
-        fn convert_to_kilo_works(value: $name<Meter>) -> bool {
+        fn scale_to_kilo_works(value: $name<Meter>) -> bool {
           let expected_amount = value.clone().base().value() / Kilo::<Meter>::factor();
-          Kilo::convert(value).value() == expected_amount
+          Kilo::scale(value).value() == expected_amount
         }
       }
     }

@@ -1,5 +1,5 @@
-use {BigRational, BigInt};
-use base::*;
+use {BigRational, BigInt, Unit};
+use base::Base;
 use num::pow::pow;
 use num::bigint::Sign::*;
 use std::ops::Neg;
@@ -7,18 +7,12 @@ use std::ops::Neg;
 #[macro_use]
 mod macros;
 
-pub trait Prefix<B> where B: Base {
-  fn new(val: BigRational) -> Self;
-  // The factor amount.
+pub trait Prefix<B>: Unit where B: Base {
+  // The factor amount. Eg Kilo is 1*10^3, or 1000.
   fn factor() -> &'static BigRational;
-  // The SI shorthand prefix.
-  fn prefix() -> &'static str;
-  // The base unit.
+  /// Scale to a prefix.
+  fn scale<P>(value: P) -> Self where P: Unit + Prefix<B>;
   fn base(self) -> B;
-  // The amount of prefix units.
-  fn value(self) -> BigRational;
-  // Convert from another prefix.
-  fn convert<P>(val: P) -> Self where P: Prefix<B>;
 }
 
 fn generate_prefix_factor(exp: isize) -> BigRational {
@@ -34,162 +28,162 @@ fn generate_prefix_factor(exp: isize) -> BigRational {
   }
 }
 
-generate_prefix! {
-  name   = Yotta,
-  module = yotta,
-  prefix = Y,
-  factor = 24,
-  doc    = "A yotta is 10^24 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Yotta,
+//   module = yotta,
+//   shortform = Y,
+//   factor = 24,
+//   doc    = "A yotta is 10^24 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Zetta,
-  module = zetta,
-  prefix = Z,
-  factor = 21,
-  doc    = "A zetta is 10^21 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Zetta,
+//   module = zetta,
+//   shortform = Z,
+//   factor = 21,
+//   doc    = "A zetta is 10^21 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Exa,
-  module = exa,
-  prefix = E,
-  factor = 18,
-  doc    = "An exa is 10^18 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Exa,
+//   module = exa,
+//   shortform = E,
+//   factor = 18,
+//   doc    = "An exa is 10^18 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Peta,
-  module = peta,
-  prefix = P,
-  factor = 15,
-  doc    = "A peta is 10^15 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Peta,
+//   module = peta,
+//   shortform = P,
+//   factor = 15,
+//   doc    = "A peta is 10^15 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Tera,
-  module = tera,
-  prefix = T,
-  factor = 12,
-  doc    = "A tera is 10^12 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Tera,
+//   module = tera,
+//   shortform = T,
+//   factor = 12,
+//   doc    = "A tera is 10^12 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Giga,
-  module = giga,
-  prefix = G,
-  factor = 9,
-  doc    = "A giga is 10^9 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Giga,
+//   module = giga,
+//   shortform = G,
+//   factor = 9,
+//   doc    = "A giga is 10^9 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Mega,
-  module = mega,
-  prefix = M,
-  factor = 6,
-  doc    = "A mega is 10^6 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Mega,
+//   module = mega,
+//   shortform = M,
+//   factor = 6,
+//   doc    = "A mega is 10^6 of the base unit.", 
+// }
 
 generate_prefix! {
   name   = Kilo,
   module = kilo,
-  prefix = k,
+  shortform = k,
   factor = 3,
   doc    = "A kilo is 10^3 of the base unit.", 
 }
 
-generate_prefix! {
-  name   = Hecto,
-  module = hecto,
-  prefix = h,
-  factor = 2,
-  doc    = "A hecto is 10^2 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Hecto,
+//   module = hecto,
+//   shortform = h,
+//   factor = 2,
+//   doc    = "A hecto is 10^2 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Deca,
-  module = deca,
-  prefix = da,
-  factor = 1,
-  doc    = "A hecto is 10^1 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Deca,
+//   module = deca,
+//   shortform = da,
+//   factor = 1,
+//   doc    = "A hecto is 10^1 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Deci,
-  module = deci,
-  prefix = d,
-  factor = -1,
-  doc    = "A deci is 10^-1 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Deci,
+//   module = deci,
+//   shortform = d,
+//   factor = -1,
+//   doc    = "A deci is 10^-1 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Centi,
-  module = centi,
-  prefix = c,
-  factor = -2,
-  doc    = "A centi is 10^-2 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Centi,
+//   module = centi,
+//   shortform = c,
+//   factor = -2,
+//   doc    = "A centi is 10^-2 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Milli,
-  module = milli,
-  prefix = m,
-  factor = -3,
-  doc    = "A milli is 10^-3 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Milli,
+//   module = milli,
+//   shortform = m,
+//   factor = -3,
+//   doc    = "A milli is 10^-3 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Micro,
-  module = micro,
-  prefix = μ,
-  factor = -6,
-  doc    = "A micro is 10^-6 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Micro,
+//   module = micro,
+//   shortform = μ,
+//   factor = -6,
+//   doc    = "A micro is 10^-6 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Nano,
-  module = nano,
-  prefix = n,
-  factor = -9,
-  doc    = "A nano is 10^-9 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Nano,
+//   module = nano,
+//   shortform = n,
+//   factor = -9,
+//   doc    = "A nano is 10^-9 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Pico,
-  module = pico,
-  prefix = p,
-  factor = -12,
-  doc    = "A pico is 10^-12 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Pico,
+//   module = pico,
+//   shortform = p,
+//   factor = -12,
+//   doc    = "A pico is 10^-12 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Femto,
-  module = femto,
-  prefix = f,
-  factor = -15,
-  doc    = "A femto is 10^-15 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Femto,
+//   module = femto,
+//   shortform = f,
+//   factor = -15,
+//   doc    = "A femto is 10^-15 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Atto,
-  module = atto,
-  prefix = a,
-  factor = -18,
-  doc    = "An atto is 10^-18 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Atto,
+//   module = atto,
+//   shortform = a,
+//   factor = -18,
+//   doc    = "An atto is 10^-18 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Zepto,
-  module = zepto,
-  prefix = z,
-  factor = -21,
-  doc    = "A zepto is 10^-21 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Zepto,
+//   module = zepto,
+//   shortform = z,
+//   factor = -21,
+//   doc    = "A zepto is 10^-21 of the base unit.", 
+// }
 
-generate_prefix! {
-  name   = Yocto,
-  module = yocto,
-  prefix = y,
-  factor = -24,
-  doc    = "A yocto is 10^-24 of the base unit.", 
-}
+// generate_prefix! {
+//   name   = Yocto,
+//   module = yocto,
+//   shortform = y,
+//   factor = -24,
+//   doc    = "A yocto is 10^-24 of the base unit.", 
+// }
