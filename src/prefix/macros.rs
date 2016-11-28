@@ -2,22 +2,24 @@
 macro_rules! generate_prefix {
   {
     name   = $name:ident,
-    module = $module:ident,
-    shortform = $prefix:ident,
+    longform = $longform:ident,
+    shortform = $shortform:ident,
     factor = $factor:expr,
     $doc:meta,
   } => (
-    mod $module {
+    mod $longform {
       use {BigRational, BigInt};
       use prefix::*;
-      use base::*;
+      use base::Base;
+      #[cfg(test)]use base::Meter;
       use super::generate_prefix_factor;
       #[cfg(test)] use quickcheck::{Arbitrary, Gen};
       use std::marker::PhantomData;
 
       lazy_static! {
         static ref FACTOR: BigRational = generate_prefix_factor($factor);
-        static ref PREFIX: &'static str = stringify!($prefix);
+        static ref SHORTFORM: &'static str = stringify!($shortform);
+        static ref LONGFORM: &'static str = stringify!($longform);
       }
 
       #[$doc]
@@ -35,11 +37,11 @@ macro_rules! generate_prefix {
             base: PhantomData,
           }
         }
-        fn shortform() -> &'static str {
-          &*PREFIX
+        fn shortform() -> String {
+          format!("{}{}", *SHORTFORM, B::shortform())
         }
-        fn longform() -> &'static str {
-          unimplemented!()
+        fn longform() -> String {
+          format!("{}{}", *LONGFORM, B::longform())
         }
         fn value(self) -> BigRational {
           self.value
@@ -100,6 +102,15 @@ macro_rules! generate_prefix {
         }
       }
 
+      #[test]
+      fn has_right_shortform() {
+        assert_eq!($name::<Meter>::shortform(), format!("{}{}", stringify!($shortform), Meter::shortform()))
+      }
+      #[test]
+      fn has_right_longform() {
+        assert_eq!($name::<Meter>::longform(), format!("{}{}", stringify!($longform), Meter::longform()))
+      }
+
       #[cfg(test)]
       quickcheck! {
         fn into_prefix_and_back_to_base_is_equal(value: Meter) -> bool {
@@ -150,6 +161,6 @@ macro_rules! generate_prefix {
         }
       }
     }
-    pub use self::$module::$name;
+    pub use self::$longform::$name;
   )
 }

@@ -16,11 +16,11 @@ impl Unit for Meter {
       value: value 
     }
   }
-  fn shortform() -> &'static str {
-    "m"
+  fn shortform() -> String {
+    "m".into()
   }
-  fn longform() -> &'static str {
-    "meter"
+  fn longform() -> String {
+    "meter".into()
   }
   fn value(self) -> BigRational {
     self.value
