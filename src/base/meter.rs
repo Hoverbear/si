@@ -1,8 +1,7 @@
 use {BigRational, BigInt, Unit};
 use super::Base;
+use dimension::*;
 #[cfg(test)] use quickcheck::{Arbitrary, Gen};
-
-trait Distance {}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Meter {
@@ -25,6 +24,8 @@ impl Unit for Meter {
     self.value
   }
 }
+
+impl Distance for Meter {}
 
 impl Base for Meter {}
 

@@ -9,10 +9,10 @@ extern crate quickcheck;
 
 pub mod prefix;
 pub mod base;
+pub mod dimension;
 
-pub use num::bigint::BigInt;
-pub use num::rational::BigRational;
-pub use num::bigint::Sign;
+use num::bigint::BigInt;
+use num::rational::BigRational;
 
 pub trait Unit: From<BigRational> + From<BigInt> + Clone + Eq {
   /// Create a new unit from a numeric value.

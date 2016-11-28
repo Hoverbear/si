@@ -10,6 +10,7 @@ macro_rules! generate_prefix {
     mod $longform {
       use {BigRational, BigInt};
       use prefix::*;
+      use dimension::*;
       use base::Base;
       #[cfg(test)]use base::Meter;
       use super::generate_prefix_factor;
@@ -48,6 +49,7 @@ macro_rules! generate_prefix {
         }
       }
 
+      // Enable it to be a prefix.
       impl<B> Prefix<B> for $name<B> where B: Base {
         fn factor() -> &'static BigRational {
           &*FACTOR
@@ -59,6 +61,8 @@ macro_rules! generate_prefix {
           B::new(self.value * Self::factor())
         }
       }
+
+      impl<B> Distance for $name<B> where B: Base + Distance {}
 
       // Create a prefix from a given base.
       impl<B> From<B> for $name<B> where B: Base {
