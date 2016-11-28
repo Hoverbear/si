@@ -1,6 +1,5 @@
 use {BigRational, BigInt, Unit};
 use super::Base;
-use prefix::Prefix;
 #[cfg(test)] use quickcheck::{Arbitrary, Gen};
 
 trait Distance {}
@@ -27,11 +26,7 @@ impl Unit for Meter {
   }
 }
 
-impl Base for Meter {
-  fn scale<P>(self) -> P where P: Unit + Prefix<Meter> {
-    unimplemented!();
-  }
-}
+impl Base for Meter {}
 
 impl From<BigInt> for Meter {
   fn from(val: BigInt) -> Self {
