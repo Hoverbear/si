@@ -68,13 +68,13 @@ macro_rules! generate_prefix {
       }
 
       #[cfg(test)]
-      impl Arbitrary for $name<Meter> {
+      impl<B> Arbitrary for $name<B> where B: Base + Send + 'static {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
           let (numerator, denominator) = (g.gen::<i64>(), g.gen::<i64>());
           let denominator = if denominator == 0 { 1 } else { denominator }; // The denominator cannot be zero.
 
           let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
-          $name::<Meter>::new(rational)
+          $name::<B>::new(rational)
         }
       }
 
@@ -109,7 +109,13 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<B> Distance for $name<B> where B: Base + Distance {}
+      impl<B> Length for $name<B> where B: Base + Length {}
+      impl<B> Mass for $name<B> where B: Base + Mass {}
+      impl<B> Time for $name<B> where B: Base + Time {}
+      impl<B> Current for $name<B> where B: Base + Current {}
+      impl<B> Temperature for $name<B> where B: Base + Temperature{}
+      impl<B> Amount for $name<B> where B: Base + Amount {}
+      impl<B> Intensity for $name<B> where B: Base + Intensity {}
 
       //
       // Conversions
@@ -177,7 +183,7 @@ macro_rules! generate_prefix {
       }
 
       //
-      // Operations
+      // Operations on this type
       //
       impl<B> Add<$name<B>> for $name<B> where B: Base {
         type Output = Self;

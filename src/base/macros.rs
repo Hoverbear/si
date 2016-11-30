@@ -11,8 +11,10 @@ macro_rules! generate_base {
       use {BigRational, BigInt, Unit};
       use dimension::*;
       use base::Base;
+      use prefix::Prefix;
       use std::ops::*;
       #[cfg(test)] use quickcheck::{Arbitrary, Gen};
+      #[cfg(test)] use prefix::Kilo;
 
       lazy_static! {
         static ref SHORTFORM: &'static str = stringify!($shortform);
@@ -98,7 +100,7 @@ macro_rules! generate_base {
       }
 
       //
-      // Operations
+      // Operations on this type
       //
 
       impl Add<$name> for $name {
@@ -217,8 +219,135 @@ macro_rules! generate_base {
 
       #[cfg(test)]
       quickcheck! {
-        fn can_mul_assign_arbitrary(first: $name, second: $name) -> bool {
+        fn can_mul_assign_self(first: $name, second: $name) -> bool {
           let check = first.clone().value() * second.clone().value();
+          let mut first = first;
+          first *= second;
+          first.value() == check
+        }
+      }
+
+      //
+      // Operations on prefixes
+      //
+      impl<P> Add<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn add(self, value: P) -> Self {
+          Self::new(self.value() + value.base().value())
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_add_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() + second.clone().base().value();
+          (first + second).value() == check
+        }
+      }
+
+      impl<P> AddAssign<P> for $name where P: Prefix<$name> {
+        fn add_assign(&mut self, value: P) {
+          self.value = self.value.clone() + value.base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_add_assign_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() + second.clone().base().value();
+          let mut first = first;
+          first += second;
+          first.value() == check
+        }
+      }
+
+      impl<P> Sub<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn sub(self, value: P) -> Self {
+          Self::new(self.value - value.base().value())
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_sub_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() - second.clone().base().value();
+          (first - second).value() == check
+        }
+      }
+
+      impl<P> SubAssign<P> for $name where P: Prefix<$name> {
+        fn sub_assign(&mut self, value: P) {
+          self.value = self.value.clone() - value.base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_sub_assign_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() - second.clone().base().value();
+          let mut first = first;
+          first -= second;
+          first.value() == check
+        }
+      }
+
+      impl<P> Div<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn div(self, value: P) -> Self {
+          Self::new(self.value / value.base().value())
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_div_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() / second.clone().base().value();
+          (first / second).value() == check
+        }
+      }
+
+      impl<P> DivAssign<P> for $name where P: Prefix<$name> {
+        fn div_assign(&mut self, value: P) {
+          self.value = self.value.clone() / value.base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_div_assign_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() / second.clone().base().value();
+          let mut first = first;
+          first /= second;
+          first.value() == check
+        }
+      }
+
+      impl<P> Mul<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn mul(self, value: P) -> Self {
+          Self::new(self.value / value.base().value())
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_mul_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() / second.clone().base().value();
+          (first / second).value() == check
+        }
+      }
+
+      impl<P> MulAssign<P> for $name where P: Prefix<$name> {
+        fn mul_assign(&mut self, value: P) {
+          self.value = self.value.clone() * value.base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_mul_assign_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() * second.clone().base().value();
           let mut first = first;
           first *= second;
           first.value() == check
