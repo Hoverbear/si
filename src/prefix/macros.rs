@@ -103,9 +103,9 @@ macro_rules! generate_prefix {
           prefixed.base() == value
         }
         // This is mostly done just to test that convert works. All implementations of convert should similarly work.
-        fn scale_to_kilo_works(value: $name<Meter>) -> bool {
-          let expected_amount = value.clone().base().value() / Kilo::<Meter>::factor();
-          Kilo::scale(value).value() == expected_amount
+        fn scale_from_kilo_works(value: Kilo<Meter>) -> bool {
+          let expected_amount = value.clone().base().value() / $name::<Meter>::factor();
+          $name::scale(value).value() == expected_amount
         }
       }
 
@@ -183,129 +183,98 @@ macro_rules! generate_prefix {
       }
 
       //
-      // Operations on this type
+      // Operations on prefixes
       //
-      impl<B> Add<$name<B>> for $name<B> where B: Base {
+      
+      impl<P,B> Add<P> for $name<B> where P: Prefix<B>, B: Base {
         type Output = Self;
-        fn add(self, value: Self) -> Self {
-          Self::new(self.value + value.value())
+        fn add(self, value: P) -> Self {
+          Self::from(self.base() + value.base())
         }
       }
 
       #[cfg(test)]
       quickcheck! {
         fn can_add_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() + second.clone().value();
-          (first + second).value() == check
+          let check = first.clone().base().value() + second.clone().base().value();
+          (first + second).base().value() == check
+        }
+        fn can_add_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
+          let check = first.clone().base().value() + second.clone().base().value();
+          (first + second).base().value() == check
+        }
+        fn can_add_base(first: $name<Meter>, second: Meter) -> bool {
+          let check = first.clone().base().value() + second.clone().value();
+          (first + second).base().value() == check
         }
       }
 
-      impl<B> AddAssign<$name<B>> for $name<B> where B: Base {
-        fn add_assign(&mut self, value: Self) {
-          self.value = self.value.clone() + value.value()
-        }
-      }
-
-      #[cfg(test)]
-      quickcheck! {
-        fn can_add_assign_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() + second.clone().value();
-          let mut first = first;
-          first += second;
-          first.value() == check
-        }
-      }
-
-      impl<B> Sub<$name<B>> for $name<B> where B: Base {
+      impl<P,B> Sub<P> for $name<B> where P: Prefix<B>, B: Base {
         type Output = Self;
-        fn sub(self, value: Self) -> Self {
-          Self::new(self.value - value.value())
+        fn sub(self, value: P) -> Self {
+          Self::from(self.base() - value.base())
         }
       }
 
       #[cfg(test)]
       quickcheck! {
         fn can_sub_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() - second.clone().value();
-          (first - second).value() == check
+          let check = first.clone().base().value() - second.clone().base().value();
+          (first - second).base().value() == check
+        }
+        fn can_sub_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
+          let check = first.clone().base().value() - second.clone().base().value();
+          (first - second).base().value() == check
+        }
+        fn can_sub_base(first: $name<Meter>, second: Meter) -> bool {
+          let check = first.clone().base().value() - second.clone().value();
+          (first - second).base().value() == check
         }
       }
 
-      impl<B> SubAssign<$name<B>> for $name<B> where B: Base {
-        fn sub_assign(&mut self, value: Self) {
-          self.value = self.value.clone() - value.value()
-        }
-      }
-
-      #[cfg(test)]
-      quickcheck! {
-        fn can_sub_assign_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() - second.clone().value();
-          let mut first = first;
-          first -= second;
-          first.value() == check
-        }
-      }
-
-      impl<B> Div<$name<B>> for $name<B> where B: Base {
+      impl<P,B> Div<P> for $name<B> where P: Prefix<B>, B: Base {
         type Output = Self;
-        fn div(self, value: Self) -> Self {
-          Self::new(self.value / value.value())
+        fn div(self, value: P) -> Self {
+          Self::from(self.base() / value.base())
         }
       }
 
       #[cfg(test)]
       quickcheck! {
         fn can_div_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() / second.clone().value();
-          (first / second).value() == check
+          let check = first.clone().base().value() / second.clone().base().value();
+          (first / second).base().value() == check
+        }
+        fn can_div_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
+          let check = first.clone().base().value() / second.clone().base().value();
+          (first / second).base().value() == check
+        }
+        fn can_div_base(first: $name<Meter>, second: Meter) -> bool {
+          let check = first.clone().base().value() / second.clone().value();
+          (first / second).base().value() == check
         }
       }
 
-      impl<B> DivAssign<$name<B>> for $name<B> where B: Base {
-        fn div_assign(&mut self, value: Self) {
-          self.value = self.value.clone() / value.value()
-        }
-      }
-
-      #[cfg(test)]
-      quickcheck! {
-        fn can_div_assign_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() / second.clone().value();
-          let mut first = first;
-          first /= second;
-          first.value() == check
-        }
-      }
-
-      impl<B> Mul<$name<B>> for $name<B> where B: Base {
+      impl<P,B> Mul<P> for $name<B> where P: Prefix<B>, B: Base {
         type Output = Self;
-        fn mul(self, value: Self) -> Self {
-          Self::new(self.value / value.value())
+        fn mul(self, value: P) -> Self {
+          Self::from(self.base() * value.base())
         }
       }
 
       #[cfg(test)]
       quickcheck! {
         fn can_mul_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() / second.clone().value();
-          (first / second).value() == check
+          let check = first.clone().base().value() * second.clone().base().value();
+          (first * second).base().value() == check
         }
-      }
-
-      impl<B> MulAssign<$name<B>> for $name<B> where B: Base {
-        fn mul_assign(&mut self, value: Self) {
-          self.value = self.value.clone() * value.value()
+        fn can_mul_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
+          let check = first.clone().base().value() * second.clone().base().value();
+          (first * second).base().value() == check
         }
-      }
-
-      #[cfg(test)]
-      quickcheck! {
-        fn can_mul_assign_arbitrary(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().value() * second.clone().value();
-          let mut first = first;
-          first *= second;
-          first.value() == check
+        fn can_mul_base(first: $name<Meter>, second: Meter) -> bool {
+          let check = first.clone().base().value() * second.clone().value();
+          (first * second).base().value() == check
         }
       }
     }

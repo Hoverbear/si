@@ -1,4 +1,4 @@
-use {Unit};
+use Unit;
 
 #[macro_use]
 mod macros;

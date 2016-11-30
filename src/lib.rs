@@ -11,10 +11,12 @@ pub mod prefix;
 pub mod base;
 pub mod dimension;
 
+use std::ops::*;
 use num::bigint::BigInt;
 use num::rational::BigRational;
 
-pub trait Unit: From<BigRational> + From<BigInt> + Clone + Eq {
+pub trait Unit: From<BigRational> + From<BigInt> + Clone + Eq + 
+Add<Self,Output=Self> + Sub<Self,Output=Self> + Mul<Self,Output=Self> + Div<Self,Output=Self> {
   /// Create a new unit from a numeric value.
   fn new(val: BigRational) -> Self;
   /// Consume the unit and return its internal numeric value. 
