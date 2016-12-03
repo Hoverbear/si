@@ -19,8 +19,10 @@ pub trait Unit: From<BigRational> + From<BigInt> + Clone + Eq +
 Add<Self,Output=Self> + Sub<Self,Output=Self> + Mul<Self,Output=Self> + Div<Self,Output=Self> {
   /// Create a new unit from a numeric value.
   fn new(val: BigRational) -> Self;
-  /// Consume the unit and return its internal numeric value. 
+  /// Get the value. 
   fn value(self) -> BigRational;
+  /// Get a reference to the value.
+  fn value_ref(&self) -> &BigRational;
   /// The full string for the unit. Eg `kilometer` for Kilometer.
   fn longform() -> String;
   /// The short hand for the unit. Eg `km` for Kilometer.
@@ -28,6 +30,6 @@ Add<Self,Output=Self> + Sub<Self,Output=Self> + Mul<Self,Output=Self> + Div<Self
 }
 
 pub trait IntoBase<B>: Unit where B: Unit {
-  /// Consume self and return the base unit. In the case of already base units this is a noop.
+  /// Get the base unit.
   fn base(self) -> B;
 }

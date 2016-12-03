@@ -50,6 +50,9 @@ macro_rules! generate_prefix {
         fn value(self) -> BigRational {
           self.value
         }
+        fn value_ref(&self) -> &BigRational {
+          &self.value
+        }
       }
 
       #[test]

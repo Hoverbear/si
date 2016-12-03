@@ -45,6 +45,9 @@ macro_rules! generate_base {
         fn value(self) -> BigRational {
           self.value
         }
+        fn value_ref(&self) -> &BigRational {
+          &self.value
+        }
       }
 
       #[cfg(test)]
@@ -238,9 +241,12 @@ macro_rules! generate_base {
         }
       }
 
-      impl<P> PartialEq<P> for $name where P: IntoBase<$name> {
-        fn eq(&self, other: &P) -> bool {
-          self.value == other.clone().base().value()
+      //
+      // Equals
+      //
+      impl PartialEq for $name {
+        fn eq(&self, other: &$name) -> bool {
+          self.value_ref() == other.value_ref()
         }
       }
 
@@ -250,6 +256,16 @@ macro_rules! generate_base {
           let duplicate = value.clone();
           value == duplicate
         }
+      }
+
+      impl<P> PartialEq<P> for $name where P: Prefix<$name> {
+        fn eq(&self, other: &P) -> bool {
+          self.value_ref() == other.clone().base().value_ref()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
         fn can_eq_prefix(value: $name) -> bool {
           let as_kilo = Kilo::scale(value.clone());
           value == as_kilo
