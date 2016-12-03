@@ -8,7 +8,7 @@ macro_rules! generate_base {
     $doc:meta,
   } => (
     mod $longform {
-      use {BigRational, BigInt, Unit};
+      use {BigRational, BigInt, Unit, IntoBase};
       use dimension::*;
       use base::Base;
       use prefix::Prefix;
@@ -75,14 +75,7 @@ macro_rules! generate_base {
 
       impl Base for $name {}
 
-      // Enable it to be a prefix.
-      impl Prefix<$name> for $name {
-        fn factor() -> &'static BigRational {
-          &*FACTOR
-        }
-        fn scale<P>(value: P) -> Self where P: Unit + Prefix<Self> {
-          Self::from(value.base())
-        }
+      impl IntoBase<$name> for $name {
         fn base(self) -> Self {
           self
         }
@@ -111,14 +104,20 @@ macro_rules! generate_base {
           Self::new(val)
         }
       }
-      
+
+      impl<P> From<P> for $name where P: Prefix<$name> {
+        fn from(val: P) -> Self {
+          val.base()
+        }
+      }
+
       //
-      // Operations
+      // Operations on self
       //
-      impl<P> Add<P> for $name where P: Prefix<$name> {
+      impl Add for $name {
         type Output = Self;
-        fn add(self, value: P) -> Self {
-          Self::new(self.value() + value.base().value())
+        fn add(self, other: Self) -> Self {
+          Self::new(self.value + other.value())
         }
       }
 
@@ -128,16 +127,12 @@ macro_rules! generate_base {
           let check = first.clone().value() + second.clone().value();
           (first + second).value() == check
         }
-        fn can_add_prefix(first: $name, second: Kilo<$name>) -> bool {
-          let check = first.clone().value() + second.clone().base().value();
-          (first + second).value() == check
-        }
       }
 
-      impl<P> Sub<P> for $name where P: Prefix<$name> {
+      impl Sub for $name {
         type Output = Self;
-        fn sub(self, value: P) -> Self {
-          Self::new(self.value - value.base().value())
+        fn sub(self, other: Self) -> Self {
+          Self::new(self.value - other.value())
         }
       }
 
@@ -147,16 +142,12 @@ macro_rules! generate_base {
           let check = first.clone().value() - second.clone().value();
           (first - second).value() == check
         }
-        fn can_sub_prefix(first: $name, second: Kilo<$name>) -> bool {
-          let check = first.clone().value() - second.clone().base().value();
-          (first - second).value() == check
-        }
       }
 
-      impl<P> Div<P> for $name where P: Prefix<$name> {
+      impl Div for $name {
         type Output = Self;
-        fn div(self, value: P) -> Self {
-          Self::new(self.value / value.base().value())
+        fn div(self, other: Self) -> Self {
+          Self::new(self.value / other.value())
         }
       }
 
@@ -166,16 +157,12 @@ macro_rules! generate_base {
           let check = first.clone().value() / second.clone().value();
           (first / second).value() == check
         }
-        fn can_div_prefix(first: $name, second: Kilo<$name>) -> bool {
-          let check = first.clone().value() / second.clone().base().value();
-          (first / second).value() == check
-        }
       }
 
-      impl<P> Mul<P> for $name where P: Prefix<$name> {
+      impl Mul for $name {
         type Output = Self;
-        fn mul(self, value: P) -> Self {
-          Self::new(self.value * value.base().value())
+        fn mul(self, other: Self) -> Self {
+          Self::new(self.value * other.value())
         }
       }
 
@@ -185,13 +172,72 @@ macro_rules! generate_base {
           let check = first.clone().value() * second.clone().value();
           (first * second).value() == check
         }
+      }
+
+      //
+      // Operations on prefixes
+      //
+      impl<P> Add<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn add(self, other: P) -> Self {
+          self + other.base()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_add_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() + second.clone().base().value();
+          (first + second).value() == check
+        }
+      }
+
+      impl<P> Sub<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn sub(self, value: P) -> Self {
+          self - value.base()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_sub_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() - second.clone().base().value();
+          (first - second).value() == check
+        }
+      }
+
+      impl<P> Div<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn div(self, value: P) -> Self {
+          self / value.base()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_div_prefix(first: $name, second: Kilo<$name>) -> bool {
+          let check = first.clone().value() / second.clone().base().value();
+          (first / second).value() == check
+        }
+      }
+
+      impl<P> Mul<P> for $name where P: Prefix<$name> {
+        type Output = Self;
+        fn mul(self, value: P) -> Self {
+          self * value.base()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
         fn can_mul_prefix(first: $name, second: Kilo<$name>) -> bool {
           let check = first.clone().value() * second.clone().base().value();
           (first * second).value() == check
         }
       }
 
-      impl<P> PartialEq<P> for $name where P: Prefix<$name> {
+      impl<P> PartialEq<P> for $name where P: IntoBase<$name> {
         fn eq(&self, other: &P) -> bool {
           self.value == other.clone().base().value()
         }

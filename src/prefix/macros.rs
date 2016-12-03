@@ -8,7 +8,7 @@ macro_rules! generate_prefix {
     $doc:meta,
   } => (
     mod $longform {
-      use {BigRational, BigInt};
+      use {BigRational, BigInt, IntoBase};
       use prefix::*;
       use dimension::*;
       use base::Base;
@@ -87,9 +87,12 @@ macro_rules! generate_prefix {
         fn factor() -> &'static BigRational {
           &*FACTOR
         }
-        fn scale<P>(value: P) -> Self where P: Unit + Prefix<B> {
+        fn scale<P>(value: P) -> Self where P: IntoBase<B> {
           Self::from(value.base())
         }
+      }
+
+      impl<B> IntoBase<B> for $name<B> where B: Base {
         fn base(self) -> B {
           B::new(self.value * Self::factor())
         }
@@ -185,8 +188,7 @@ macro_rules! generate_prefix {
       //
       // Operations on prefixes
       //
-      
-      impl<P,B> Add<P> for $name<B> where P: Prefix<B>, B: Base {
+      impl<P,B> Add<P> for $name<B> where P: IntoBase<B>, B: Base {
         type Output = Self;
         fn add(self, value: P) -> Self {
           Self::from(self.base() + value.base())
@@ -209,7 +211,7 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<P,B> Sub<P> for $name<B> where P: Prefix<B>, B: Base {
+      impl<P,B> Sub<P> for $name<B> where P: IntoBase<B>, B: Base {
         type Output = Self;
         fn sub(self, value: P) -> Self {
           Self::from(self.base() - value.base())
@@ -232,7 +234,7 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<P,B> Div<P> for $name<B> where P: Prefix<B>, B: Base {
+      impl<P,B> Div<P> for $name<B> where P: IntoBase<B>, B: Base {
         type Output = Self;
         fn div(self, value: P) -> Self {
           Self::from(self.base() / value.base())
@@ -255,7 +257,7 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<P,B> Mul<P> for $name<B> where P: Prefix<B>, B: Base {
+      impl<P,B> Mul<P> for $name<B> where P: IntoBase<B>, B: Base {
         type Output = Self;
         fn mul(self, value: P) -> Self {
           Self::from(self.base() * value.base())
@@ -278,7 +280,7 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<P,B> PartialEq<P> for $name<B> where P: Prefix<B>, B: Base {
+      impl<P,B> PartialEq<P> for $name<B> where P: IntoBase<B>, B: Base {
         fn eq(&self, other: &P) -> bool {
           self.clone().base().value() == other.clone().base().value()
         }

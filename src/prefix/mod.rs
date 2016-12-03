@@ -1,4 +1,4 @@
-use {BigRational, BigInt, Unit};
+use {BigRational, BigInt, Unit, IntoBase};
 use base::Base;
 use num::pow::pow;
 use num::bigint::Sign::*;
@@ -7,13 +7,11 @@ use std::ops::Neg;
 #[macro_use]
 mod macros;
 
-pub trait Prefix<B>: Unit where B: Base {
-  /// The factor amount. Eg Kilo is 1*10^3, or 1000.
+pub trait Prefix<B>: Unit + IntoBase<B> where B: Base {
+  /// The factor amount. Eg Kilo is 1*10^3.
   fn factor() -> &'static BigRational;
   /// Scale to a prefix.
-  fn scale<P>(value: P) -> Self where P: Unit + Prefix<B>;
-  /// Consume this prefix and return the base unit.
-  fn base(self) -> B;
+  fn scale<P>(value: P) -> Self where P: IntoBase<B>;
 }
 
 fn generate_prefix_factor(exp: isize) -> BigRational {

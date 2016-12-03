@@ -26,3 +26,8 @@ Add<Self,Output=Self> + Sub<Self,Output=Self> + Mul<Self,Output=Self> + Div<Self
   /// The short hand for the unit. Eg `km` for Kilometer.
   fn shortform() -> String;
 }
+
+pub trait IntoBase<B>: Unit where B: Unit {
+  /// Consume self and return the base unit. In the case of already base units this is a noop.
+  fn base(self) -> B;
+}
