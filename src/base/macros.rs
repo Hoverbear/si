@@ -8,17 +8,18 @@ macro_rules! generate_base {
     $doc:meta,
   } => (
     mod $longform {
-      use {BigRational, BigInt, Unit, IntoBase};
-      use dimension::*;
-      use base::Base;
-      use prefix::Prefix;
-      use std::ops::*;
-      use std::cmp::*;
-      #[cfg(test)] use quickcheck::{Arbitrary, Gen};
       #[cfg(test)] use prefix::Kilo;
+      #[cfg(test)] use quickcheck::{Arbitrary, Gen};
+      use {Unit, IntoBase};
+      use base::Base;
+      use dimension::*;
+      use num::bigint::BigInt;
+      use num::rational::BigRational;
+      use prefix::Prefix;
+      use std::cmp::*;
+      use std::ops::*;
 
       lazy_static! {
-        static ref FACTOR: BigRational = BigRational::new(BigInt::from(1), BigInt::from(1));
         static ref SHORTFORM: &'static str = stringify!($shortform);
         static ref LONGFORM: &'static str = stringify!($longform);
       }

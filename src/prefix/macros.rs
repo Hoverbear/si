@@ -8,15 +8,17 @@ macro_rules! generate_prefix {
     $doc:meta,
   } => (
     mod $longform {
-      use {BigRational, BigInt, IntoBase};
-      use prefix::*;
-      use dimension::*;
-      use base::Base;
-      #[cfg(test)]use base::Meter;
-      use super::generate_prefix_factor;
+      #[cfg(test)] use base::Meter;
       #[cfg(test)] use quickcheck::{Arbitrary, Gen};
+      use {Unit, IntoBase};
+      use base::Base;
+      use dimension::*;
+      use num::bigint::BigInt;
+      use num::rational::BigRational;
+      use prefix::*;
       use std::marker::PhantomData;
       use std::ops::*;
+      use super::generate_prefix_factor;
 
       lazy_static! {
         static ref FACTOR: BigRational = generate_prefix_factor($factor);

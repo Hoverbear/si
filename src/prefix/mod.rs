@@ -1,8 +1,10 @@
-use {BigRational, BigInt, Unit, IntoBase};
-use base::Base;
+use std::ops::Neg;
+use num::rational::BigRational;
 use num::pow::pow;
 use num::bigint::Sign::*;
-use std::ops::Neg;
+use num::bigint::BigInt;
+use base::Base;
+use {Unit, IntoBase};
 
 #[macro_use]
 mod macros;
