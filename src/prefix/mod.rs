@@ -8,10 +8,11 @@ use std::ops::Neg;
 mod macros;
 
 pub trait Prefix<B>: Unit where B: Base {
-  // The factor amount. Eg Kilo is 1*10^3, or 1000.
+  /// The factor amount. Eg Kilo is 1*10^3, or 1000.
   fn factor() -> &'static BigRational;
   /// Scale to a prefix.
   fn scale<P>(value: P) -> Self where P: Unit + Prefix<B>;
+  /// Consume this prefix and return the base unit.
   fn base(self) -> B;
 }
 

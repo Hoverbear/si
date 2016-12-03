@@ -25,7 +25,7 @@ macro_rules! generate_prefix {
       }
 
       #[$doc]
-      #[derive(Clone, Debug, Eq, PartialEq)]
+      #[derive(Clone, Debug, Eq)]
       pub struct $name<B> where B: Base {
         value: BigRational,
         base: PhantomData<B>,
@@ -275,6 +275,24 @@ macro_rules! generate_prefix {
         fn can_mul_base(first: $name<Meter>, second: Meter) -> bool {
           let check = first.clone().base().value() * second.clone().value();
           (first * second).base().value() == check
+        }
+      }
+
+      impl<P,B> PartialEq<P> for $name<B> where P: Prefix<B>, B: Base {
+        fn eq(&self, other: &P) -> bool {
+          self.clone().base().value() == other.clone().base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_eq_self(value: $name<Meter>) -> bool {
+          let duplicate = value.clone();
+          value == duplicate
+        }
+        fn can_eq_other(value: $name<Meter>) -> bool {
+          let as_kilo = Kilo::scale(value.clone());
+          value == as_kilo
         }
       }
     }

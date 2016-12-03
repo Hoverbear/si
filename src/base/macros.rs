@@ -13,6 +13,7 @@ macro_rules! generate_base {
       use base::Base;
       use prefix::Prefix;
       use std::ops::*;
+      use std::cmp::*;
       #[cfg(test)] use quickcheck::{Arbitrary, Gen};
       #[cfg(test)] use prefix::Kilo;
 
@@ -23,7 +24,7 @@ macro_rules! generate_base {
       }
 
       #[$doc]
-      #[derive(Clone, Debug, Eq, PartialEq)]
+      #[derive(Clone, Debug, Eq)]
       pub struct $name {
         value: BigRational,
       }
@@ -70,7 +71,6 @@ macro_rules! generate_base {
       //
       // Markers
       //
-      
       impl $dimension for $name {}
 
       impl Base for $name {}
@@ -91,7 +91,6 @@ macro_rules! generate_base {
       //
       // Conversions
       //
-
       impl From<BigInt> for $name {
         fn from(val: BigInt) -> Self {
           let fraction = BigRational::from_integer(val); 
@@ -112,7 +111,7 @@ macro_rules! generate_base {
           Self::new(val)
         }
       }
-
+      
       //
       // Operations
       //
@@ -189,6 +188,24 @@ macro_rules! generate_base {
         fn can_mul_prefix(first: $name, second: Kilo<$name>) -> bool {
           let check = first.clone().value() * second.clone().base().value();
           (first * second).value() == check
+        }
+      }
+
+      impl<P> PartialEq<P> for $name where P: Prefix<$name> {
+        fn eq(&self, other: &P) -> bool {
+          self.value == other.clone().base().value()
+        }
+      }
+
+      #[cfg(test)]
+      quickcheck! {
+        fn can_eq_self(value: $name) -> bool {
+          let duplicate = value.clone();
+          value == duplicate
+        }
+        fn can_eq_prefix(value: $name) -> bool {
+          let as_kilo = Kilo::scale(value.clone());
+          value == as_kilo
         }
       }
     }
