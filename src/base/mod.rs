@@ -1,8 +1,6 @@
 use Unit;
 
-#[macro_use]
-mod macros;
-// pub use self::meter::Meter;
+#[macro_use] mod macros;
 
 pub trait Base: Unit {}
 

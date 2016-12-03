@@ -163,15 +163,6 @@ macro_rules! generate_prefix {
         }
       }
 
-      // Create a prefix from a i64.
-      impl<B> From<i64> for $name<B> where B: Base {
-        fn from(value: i64) -> Self {
-          let number = BigInt::from(value);
-          let fraction = BigRational::from_integer(number);
-          Self::new(fraction)
-        }
-      }
-
       // Create a prefix from a BigRational.
       impl<B> From<BigRational> for $name<B> where B: Base {
         fn from(value: BigRational) -> Self {
@@ -187,6 +178,66 @@ macro_rules! generate_prefix {
           let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
           let prefixed = $name::<Meter>::from(rational.clone());
           prefixed.value() == rational
+        }
+      }
+
+      impl<B> From<i64> for $name<B> where B: Base {
+        fn from(value: i64) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<u64> for $name<B> where B: Base {
+        fn from(value: u64) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<i32> for $name<B> where B: Base {
+        fn from(value: i32) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<u32> for $name<B> where B: Base {
+        fn from(value: u32) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<i16> for $name<B> where B: Base {
+        fn from(value: i16) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<u16> for $name<B> where B: Base {
+        fn from(value: u16) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<i8> for $name<B> where B: Base {
+        fn from(value: i8) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<u8> for $name<B> where B: Base {
+        fn from(value: u8) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<isize> for $name<B> where B: Base {
+        fn from(value: isize) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl<B> From<usize> for $name<B> where B: Base {
+        fn from(value: usize) -> Self {
+          Self::from(BigInt::from(value))
         }
       }
 

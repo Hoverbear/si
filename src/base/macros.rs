@@ -95,14 +95,6 @@ macro_rules! generate_base {
         }
       }
 
-      impl From<i64> for $name {
-        fn from(val: i64) -> Self {
-          let num = BigInt::from(val);
-          let fraction = BigRational::from_integer(num); 
-          Self::new(fraction)
-        }
-      }
-
       impl From<BigRational> for $name {
         fn from(val: BigRational) -> Self {
           Self::new(val)
@@ -112,6 +104,67 @@ macro_rules! generate_base {
       impl<P> From<P> for $name where P: Prefix<$name> {
         fn from(val: P) -> Self {
           val.base()
+        }
+      }
+
+
+      impl From<i64> for $name {
+        fn from(value: i64) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<u64> for $name {
+        fn from(value: u64) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<i32> for $name {
+        fn from(value: i32) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<u32> for $name {
+        fn from(value: u32) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<i16> for $name {
+        fn from(value: i16) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<u16> for $name {
+        fn from(value: u16) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<i8> for $name {
+        fn from(value: i8) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<u8> for $name {
+        fn from(value: u8) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<isize> for $name {
+        fn from(value: isize) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+
+      impl From<usize> for $name {
+        fn from(value: usize) -> Self {
+          Self::from(BigInt::from(value))
         }
       }
 

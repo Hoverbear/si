@@ -6,8 +6,7 @@ use num::bigint::BigInt;
 use base::Base;
 use {Unit, IntoBase};
 
-#[macro_use]
-mod macros;
+#[macro_use] mod macros;
 
 pub trait Prefix<B>: Unit + IntoBase<B> where B: Base {
   /// The factor amount. Eg Kilo is 1*10^3.
