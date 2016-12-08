@@ -1,4 +1,44 @@
 #[macro_use]
+macro_rules! base_from_primitives { 
+  {
+    $unit:ident, 
+    [$($primitive:ty,)*]
+  } => {
+    $(
+      impl From<$primitive> for $unit {
+        fn from(value: $primitive) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+    )*
+  }
+}
+
+#[macro_use]
+macro_rules! base_div_and_mul_with_primitives { 
+  {
+    $unit:ident, 
+    [$($primitive:ty,)*]
+  } => {
+    $(
+      impl Div<$primitive> for $unit {
+        type Output = Self;
+        fn div(self, value: $primitive) -> Self {
+          self / BigRational::from_integer(BigInt::from(value))
+        }
+      }
+
+      impl Mul<$primitive> for $unit {
+        type Output = Self;
+        fn mul(self, value: $primitive) -> Self {
+          self * BigRational::from_integer(BigInt::from(value))
+        }
+      }
+    )*
+  }
+}
+
+#[macro_use]
 macro_rules! generate_base {
   {
     name   = $name:ident,
@@ -107,66 +147,7 @@ macro_rules! generate_base {
         }
       }
 
-
-      impl From<i64> for $name {
-        fn from(value: i64) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<u64> for $name {
-        fn from(value: u64) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<i32> for $name {
-        fn from(value: i32) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<u32> for $name {
-        fn from(value: u32) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<i16> for $name {
-        fn from(value: i16) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<u16> for $name {
-        fn from(value: u16) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<i8> for $name {
-        fn from(value: i8) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<u8> for $name {
-        fn from(value: u8) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<isize> for $name {
-        fn from(value: isize) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl From<usize> for $name {
-        fn from(value: usize) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
+      base_from_primitives! { $name, [i64, u64, i32, u32, i16, u16, i8, u8, isize, usize,] }
 
       //
       // Operations on self
@@ -264,35 +245,38 @@ macro_rules! generate_base {
         }
       }
 
-      impl<P> Div<P> for $name where P: Prefix<$name> {
+      //
+      // Dividing and multiplication are defined on integral types.
+      //
+      impl Div<BigRational> for $name {
         type Output = Self;
-        fn div(self, value: P) -> Self {
-          self / value.base()
+        fn div(self, value: BigRational) -> Self {
+          Self::from(self.value() / value)
         }
       }
 
-      #[cfg(test)]
-      quickcheck! {
-        fn can_div_prefix(first: $name, second: Kilo<$name>) -> bool {
-          let check = first.clone().value() / second.clone().base().value();
-          (first / second).value() == check
-        }
-      }
-
-      impl<P> Mul<P> for $name where P: Prefix<$name> {
+      impl Div<BigInt> for $name {
         type Output = Self;
-        fn mul(self, value: P) -> Self {
-          self * value.base()
+        fn div(self, value: BigInt) -> Self {
+          Self::from(self.value() / BigRational::from_integer(value))
         }
       }
 
-      #[cfg(test)]
-      quickcheck! {
-        fn can_mul_prefix(first: $name, second: Kilo<$name>) -> bool {
-          let check = first.clone().value() * second.clone().base().value();
-          (first * second).value() == check
+      impl Mul<BigRational> for $name {
+        type Output = Self;
+        fn mul(self, value: BigRational) -> Self {
+          Self::from(self.value() * value)
         }
       }
+
+      impl Mul<BigInt> for $name {
+        type Output = Self;
+        fn mul(self, value: BigInt) -> Self {
+          Self::from(self.value() * BigRational::from_integer(value))
+        }
+      }
+
+      base_div_and_mul_with_primitives! { $name, [i64, u64, i32, u32, i16, u16, i8, u8, isize, usize,] }
 
       //
       // Equals

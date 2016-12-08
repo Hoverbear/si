@@ -1,4 +1,45 @@
 #[macro_use]
+macro_rules! prefix_from_primitives { 
+  {
+    $unit:ident, 
+    [$($primitive:ty,)*]
+  } => {
+    $(
+      impl<B> From<$primitive> for $unit<B> where B: Base {
+        fn from(value: $primitive) -> Self {
+          Self::from(BigInt::from(value))
+        }
+      }
+    )*
+  }
+}
+
+#[macro_use]
+macro_rules! prefix_div_and_mul_with_primitives { 
+  {
+    $unit:ident, 
+    [$($primitive:ty,)*]
+  } => {
+    $(
+      impl<B> Div<$primitive> for $unit<B> where B: Base {
+        type Output = Self;
+        fn div(self, value: $primitive) -> Self {
+          self / BigRational::from_integer(BigInt::from(value))
+        }
+      }
+
+      impl<B> Mul<$primitive> for $unit<B> where B: Base {
+        type Output = Self;
+        fn mul(self, value: $primitive) -> Self {
+          self * BigRational::from_integer(BigInt::from(value))
+        }
+      }
+    )*
+  }
+}
+
+
+#[macro_use]
 macro_rules! generate_prefix {
   {
     name   = $name:ident,
@@ -181,65 +222,7 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<B> From<i64> for $name<B> where B: Base {
-        fn from(value: i64) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<u64> for $name<B> where B: Base {
-        fn from(value: u64) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<i32> for $name<B> where B: Base {
-        fn from(value: i32) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<u32> for $name<B> where B: Base {
-        fn from(value: u32) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<i16> for $name<B> where B: Base {
-        fn from(value: i16) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<u16> for $name<B> where B: Base {
-        fn from(value: u16) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<i8> for $name<B> where B: Base {
-        fn from(value: i8) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<u8> for $name<B> where B: Base {
-        fn from(value: u8) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<isize> for $name<B> where B: Base {
-        fn from(value: isize) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
-
-      impl<B> From<usize> for $name<B> where B: Base {
-        fn from(value: usize) -> Self {
-          Self::from(BigInt::from(value))
-        }
-      }
+      prefix_from_primitives! { $name, [i64, u64, i32, u32, i16, u16, i8, u8, isize, usize,] }
 
       //
       // Operations on prefixes
@@ -290,51 +273,38 @@ macro_rules! generate_prefix {
         }
       }
 
-      impl<P,B> Div<P> for $name<B> where P: IntoBase<B>, B: Base {
+      //
+      // Dividing and multiplication are defined on integral types.
+      //
+      impl<B> Div<BigRational> for $name<B> where B: Base {
         type Output = Self;
-        fn div(self, value: P) -> Self {
-          Self::from(self.base() / value.base())
+        fn div(self, value: BigRational) -> Self {
+          Self::from(self.value() / value)
         }
       }
 
-      #[cfg(test)]
-      quickcheck! {
-        fn can_div_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().base().value() / second.clone().base().value();
-          (first / second).base().value() == check
-        }
-        fn can_div_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
-          let check = first.clone().base().value() / second.clone().base().value();
-          (first / second).base().value() == check
-        }
-        fn can_div_base(first: $name<Meter>, second: Meter) -> bool {
-          let check = first.clone().base().value() / second.clone().value();
-          (first / second).base().value() == check
-        }
-      }
-
-      impl<P,B> Mul<P> for $name<B> where P: IntoBase<B>, B: Base {
+      impl<B> Div<BigInt> for $name<B> where B: Base {
         type Output = Self;
-        fn mul(self, value: P) -> Self {
-          Self::from(self.base() * value.base())
+        fn div(self, value: BigInt) -> Self {
+          Self::from(self.value() / BigRational::from_integer(value))
         }
       }
 
-      #[cfg(test)]
-      quickcheck! {
-        fn can_mul_self(first: $name<Meter>, second: $name<Meter>) -> bool {
-          let check = first.clone().base().value() * second.clone().base().value();
-          (first * second).base().value() == check
-        }
-        fn can_mul_other(first: $name<Meter>, second: Kilo<Meter>) -> bool {
-          let check = first.clone().base().value() * second.clone().base().value();
-          (first * second).base().value() == check
-        }
-        fn can_mul_base(first: $name<Meter>, second: Meter) -> bool {
-          let check = first.clone().base().value() * second.clone().value();
-          (first * second).base().value() == check
+      impl<B> Mul<BigRational> for $name<B> where B: Base {
+        type Output = Self;
+        fn mul(self, value: BigRational) -> Self {
+          Self::from(self.value() * value)
         }
       }
+
+      impl<B> Mul<BigInt> for $name<B> where B: Base {
+        type Output = Self;
+        fn mul(self, value: BigInt) -> Self {
+          Self::from(self.value() * BigRational::from_integer(value))
+        }
+      }
+
+      prefix_div_and_mul_with_primitives! { $name, [i64, u64, i32, u32, i16, u16, i8, u8, isize, usize,] }
 
       impl<P,B> PartialEq<P> for $name<B> where P: IntoBase<B>, B: Base {
         fn eq(&self, other: &P) -> bool {
